@@ -423,7 +423,7 @@
 
           <div class="amc-bottom">
             <!-- ✅ clickable -->
-            <a id="amcBookLink" class="book-link" href="AMC_BOOK_URL" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
+            <a id="amcBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
 
             <div class="price-block">
               <!-- ✅ strike old + show new -->
@@ -454,7 +454,7 @@
 
           <div class="one-bottom">
             <!-- ✅ clickable -->
-            <a id="oneBookLink" class="book-link" href="ONE_TIME_BOOK_URL" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
+            <a id="oneBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
               BOOK NOW
             </a>
 
@@ -481,8 +481,6 @@
      * =========================
      */
     const PROCESS_IMAGE_URL = "PASTE_PROCESS_IMAGE_URL_HERE";   // process image URL
-    const AMC_BOOK_URL = "https://dmedsquaresolar.github.io/CustomersQuerys/";            // AMC book now page (GitHub URL)
-    const ONE_TIME_BOOK_URL = "https://dmedsquaresolar.github.io/CustomersQuerys/";  // One-time book now page (GitHub URL)
 
     // Company details for PDF (2nd photo jaisa)
     const FROM_COMPANY = {
@@ -591,26 +589,10 @@
     const slabNote   = document.getElementById("slabNote");
     const linkHint   = document.getElementById("linkHint");
 
-    const amcBookLink = document.getElementById("amcBookLink");
-    const oneBookLink = document.getElementById("oneBookLink");
-
     const downloadBtn = document.getElementById("downloadPdfBtn");
 
     // Init
     processImg.src = PROCESS_IMAGE_URL;
-
-    // Set clickable URLs
-    if (AMC_BOOK_URL && AMC_BOOK_URL !== "PASTE_AMC_BOOK_URL_HERE") amcBookLink.href = AMC_BOOK_URL;
-    if (ONE_TIME_BOOK_URL && ONE_TIME_BOOK_URL !== "PASTE_ONE_TIME_BOOK_URL_HERE") oneBookLink.href = ONE_TIME_BOOK_URL;
-
-    if (
-      (AMC_BOOK_URL === "PASTE_AMC_BOOK_URL_HERE") ||
-      (ONE_TIME_BOOK_URL === "PASTE_ONE_TIME_BOOK_URL_HERE")
-    ){
-      linkHint.textContent = "Tip: Code ke top me AMC_BOOK_URL aur ONE_TIME_BOOK_URL paste karo, tab BOOK NOW click par page open hoga.";
-    } else {
-      linkHint.textContent = "";
-    }
 
     let lastData = null;
 
