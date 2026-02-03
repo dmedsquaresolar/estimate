@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Estimate</title>
+
+  <style>
+    :root{
+      --blue2:#0b5f9a;
+      --blueCard:#0a5f8e;
+      --yellow:#f6c10a;
+      --bg:#ffffff;
+      --text:#0b1b2b;
+      --muted:#6b7b8c;
+      --cardRadius:18px;
+      --shadow: 0 10px 26px rgba(0,0,0,.14);
+      --shadowSoft: 0 8px 18px rgba(0,0,0,.10);
+      --border: 1px solid rgba(0,0,0,.08);
+      --chipBg:#f5f7fb;
+      --chipActive:#d8ffe6;
+      --chipActiveText:#1b7a3a;
+      --grayCard:#efefef;
+      --strike:#b8c2cc;
+      --green:#27a04b;
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 14px 14px 28px;
+    }
+
+    /* Top Bar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #fff;
+      border-bottom: var(--border);
+      box-shadow: 0 6px 14px rgba(0,0,0,.06);
+    }
+    .topbar-inner{
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 14px 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .back{
+      width:40px;height:40px;
+      border-radius:999px;
+      border: var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      color: var(--text);
+      box-shadow: var(--shadowSoft);
+      cursor:pointer;
+      user-select:none;
+    }
+    .title{
+      flex:1;
+      text-align:center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #1c7bb8;
+      margin-right: 40px;
+    }
+
+    h2, h3{
+      font-size: 22px;
+      margin: 18px 2px 10px;
+      font-weight: 900;
+    }
+
+    .card{
+      border-radius: var(--cardRadius);
+      box-shadow: var(--shadow);
+      border: var(--border);
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .process-img{
+      width:100%;
+      height: 190px;
+      object-fit: cover;
+      display:block;
+      background:#eef3f8;
+    }
+
+    /* Screens */
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    /* Form fields */
+    .field{ margin: 14px 0; }
+    .label{
+      font-size: 14px;
+      color:#2a3542;
+      font-weight: 700;
+      margin: 0 0 8px 2px;
+    }
+    .input, .select{
+      width:100%;
+      border: var(--border);
+      border-radius: 12px;
+      padding: 14px 14px;
+      font-size: 18px;
+      outline: none;
+      background:#fff;
+    }
+    .input::placeholder{color:#9aa7b5;}
+    .select{
+      appearance:none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #111 50%),
+        linear-gradient(135deg, #111 50%, transparent 50%);
+      background-position:
+        calc(100% - 20px) calc(50% - 4px),
+        calc(100% - 14px) calc(50% - 4px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 44px;
+    }
+
+    .btn{
+      width:100%;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 16px;
+      font-size: 22px;
+      font-weight: 900;
+      background: var(--blue2);
+      color:#fff;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      margin-top: 10px;
+    }
+    .btn:active{transform:scale(.99);}
+
+    .btn-secondary{
+      width:100%;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 16px;
+      font-size: 22px;
+      font-weight: 950;
+      background: var(--yellow);
+      color:#0b2540;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      margin-top: 14px;
+    }
+    .btn-secondary:active{transform:scale(.99);}
+
+    .chip-row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 14px;
+      border-radius: 14px;
+      border: var(--border);
+      background:#fff;
+      box-shadow: var(--shadowSoft);
+    }
+    .chip{
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: var(--border);
+      background: var(--chipBg);
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .chip.active{
+      background: var(--chipActive);
+      color: var(--chipActiveText);
+      border-color: rgba(27,122,58,.25);
+    }
+
+    /* Estimate cards */
+    .estimate-card{
+      border-radius: var(--cardRadius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: var(--border);
+      margin-top: 14px;
+      background:#fff;
+    }
+
+    /* AMC Card */
+    .amc-wrap{
+      background: var(--blueCard);
+      color:#fff;
+      padding: 16px 16px 16px;
+      position: relative;
+    }
+    .amc-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .amc-title{
+      font-size: 20px;
+      font-weight: 950;
+      margin:0;
+    }
+    .save-badge{
+      background: var(--yellow);
+      color:#0b2540;
+      font-weight: 950;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .bullets{
+      margin: 12px 0 10px 16px;
+      padding:0;
+      color:#eaf5ff;
+      font-weight: 650;
+      line-height: 1.35;
+      font-size: 15px;
+    }
+    .amc-bottom{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding-top: 8px;
+    }
+    .book-link{
+      font-weight: 950;
+      color: var(--yellow);
+      letter-spacing: .5px;
+      text-decoration:none;
+      user-select:none;
+    }
+    .book-link:active{ opacity:.9; }
+
+    .price-block{
+      text-align:right;
+      font-weight: 900;
+    }
+    .price-line{
+      font-size: 18px;
+      margin: 6px 0;
+      color:#eaf5ff;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:baseline;
+      flex-wrap: wrap;
+    }
+    .price-label{ color:#eaf5ff; font-weight: 700; }
+    .price-new{
+      color: var(--yellow);
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .price-old{
+      color: var(--strike);
+      text-decoration: line-through;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    /* One-time card */
+    .one{
+      background: var(--grayCard);
+      padding: 16px;
+    }
+    .one h4{
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 950;
+      color:#1d2630;
+    }
+    .one ul{
+      margin: 6px 0 14px 18px;
+      padding:0;
+      color:#2c3b4a;
+      font-weight: 650;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+    .one-bottom{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding-top: 6px;
+    }
+    .one-price{
+      text-align:right;
+      font-weight: 900;
+      color:#1d2630;
+      font-size: 18px;
+    }
+
+    .note{
+      margin: 10px 2px 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .error{
+      margin-top: 10px;
+      color:#b00020;
+      font-weight: 700;
+      font-size: 13px;
+      display:none;
+    }
+
+    /* Result PDF container spacing */
+    .spacer{ height: 6px; }
+
+    /* Small helper */
+    .muted{ color: var(--muted); font-size: 12px; margin-top: 8px; }
+  </style>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="back" id="backBtn" aria-label="Back">←</div>
+      <div class="title">Service Estimate</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- SCREEN 0: LOGIN -->
+    <div id="screenLogin" class="screen active">
+      <div class="field">
+        <div class="label">Name</div>
+        <input id="custName" class="input" type="text" placeholder="Enter your name">
+      </div>
+
+      <div class="field">
+        <div class="label">Mobile Number</div>
+        <input id="custMobile" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit mobile">
+      </div>
+
+      <button class="btn" id="loginBtn">Continue</button>
+      <div class="error" id="loginError"></div>
+
+      <div class="note">
+        Next step me aap Panels, Capacity aur Plan Type select karke estimate nikal sakte ho.
+      </div>
+    </div>
+
+    <!-- SCREEN 1: FORM -->
+    <div id="screenForm" class="screen">
+      <div class="field">
+        <div class="label">Number of Panels</div>
+        <input id="panels" class="input" type="number" min="1" step="1" placeholder="12" value="12">
+      </div>
+
+      <div class="field">
+        <div class="label">System Capacity in KW</div>
+        <input id="capacity" class="input" type="number" min="0" step="0.01" placeholder="3.24" value="3.24">
+      </div>
+
+      <div class="field">
+        <div class="label">Plan Type</div>
+        <select id="planType" class="select">
+          <option value="Residential" selected>Residential</option>
+          <option value="Commercial">Commercial</option>
+        </select>
+      </div>
+
+      <button class="btn" id="getEstimateBtn">Get Estimate</button>
+      <div class="error" id="formError"></div>
+
+      <div class="note">
+        Note: Panel slabs ke hisaab se estimate nikalta hai (nearest slab apply hota hai).
+      </div>
+    </div>
+
+    <!-- SCREEN 2: RESULT -->
+    <div id="screenResult" class="screen">
+      <h2>Our Professional Service Process</h2>
+      <div class="card">
+        <img id="processImg" class="process-img" alt="Process" />
+      </div>
+
+      <h3>Solar System Details</h3>
+      <div class="chip-row" id="chips"></div>
+
+      <h3>Estimates</h3>
+
+      <!-- AMC CARD -->
+      <div class="estimate-card">
+        <div class="amc-wrap">
+          <div class="amc-top">
+            <div class="amc-title">AMC - 12 Services Annually</div>
+            <div class="save-badge" id="saveBadge">SAVES 0%</div>
+          </div>
+
+          <ul class="bullets">
+            <li>1 Service per month</li>
+            <li>Effective time duration for feasibility</li>
+            <li>100% Uptime of Solar Roof Top System</li>
+          </ul>
+
+          <div class="amc-bottom">
+            <!-- ✅ clickable -->
+            <a id="amcBookLink" class="book-link" href="AMC_BOOK_URL" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
+
+            <div class="price-block">
+              <!-- ✅ strike old + show new -->
+              <div class="price-line">
+                <span class="price-label">per service charge :</span>
+                <span class="price-new" id="amcPerNew">₹0</span>
+                <span class="price-old" id="amcPerOld">₹0</span>
+              </div>
+              <div class="price-line">
+                <span class="price-label">pay Annually :</span>
+                <span class="price-new" id="amcYearNew">₹0</span>
+                <span class="price-old" id="amcYearOld">₹0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ONE TIME CARD -->
+      <div class="estimate-card">
+        <div class="one">
+          <h4>One-time service</h4>
+          <ul>
+            <li id="oneExpensiveLine">0% Expensive than AMC package</li>
+            <li>Hassle to schedule service every month</li>
+            <li>Manual Solar Roof Top Checking Required</li>
+          </ul>
+
+          <div class="one-bottom">
+            <!-- ✅ clickable -->
+            <a id="oneBookLink" class="book-link" href="ONE_TIME_BOOK_URL" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
+              BOOK NOW
+            </a>
+
+            <div class="one-price">
+              <div>service charge : <span id="oneServiceCharge">₹0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Download -->
+      <button class="btn-secondary" id="downloadPdfBtn">Download Estimate</button>
+
+      <div class="note" id="slabNote"></div>
+      <div class="muted" id="linkHint"></div>
+    </div>
+
+  </div>
+
+  <script>
+    /**
+     * =========================
+     * CONFIG (yahan aap links paste karo)
+     * =========================
+     */
+    const PROCESS_IMAGE_URL = "PASTE_PROCESS_IMAGE_URL_HERE";   // process image URL
+    const AMC_BOOK_URL = "PASTE_AMC_BOOK_URL_HERE";            // AMC book now page (GitHub URL)
+    const ONE_TIME_BOOK_URL = "PASTE_ONE_TIME_BOOK_URL_HERE";  // One-time book now page (GitHub URL)
+
+    // Company details for PDF (2nd photo jaisa)
+    const FROM_COMPANY = {
+      name: "SunTech Engineering",
+      address1: "429, Lilleria Paramount, Near Tulsidham Circle",
+      address2: "Manjalpur, Vadodara, Gujarat - 390011",
+      phone: "+91 9998546315"
+    };
+
+    // Optional logos for PDF (if you have URL, paste; else keep blank)
+    const PDF_LOGO_URL = "";      // left logo
+    const PDF_FOOTER_LOGO_URL = ""; // bottom logo
+
+    /**
+     * =========================
+     * PRICING TABLE (PDF)
+     * columns:
+     * - perVisitCharges (before discount)  -> show STRIKE
+     * - perVisitAfterDiscount (after)      -> show NEW
+     * - yearlyVisitCharges (before)        -> show STRIKE
+     * - finalAmount (after)                -> show NEW
+     */
+    const PRICING = [
+      { panels: 6,  capacityKW: 3,  perVisitCharges: 330,  perVisitAfterDiscount: 313.5,  yearlyVisitCharges: 3960,  finalAmount: 3762 },
+      { panels: 9,  capacityKW: 5,  perVisitCharges: 459,  perVisitAfterDiscount: 436.05, yearlyVisitCharges: 5508,  finalAmount: 5232.6 },
+      { panels: 10, capacityKW: 5,  perVisitCharges: 480,  perVisitAfterDiscount: 456,    yearlyVisitCharges: 5760,  finalAmount: 5472 },
+      { panels: 11, capacityKW: 6,  perVisitCharges: 550,  perVisitAfterDiscount: 522.5,  yearlyVisitCharges: 6600,  finalAmount: 6270 },
+      { panels: 12, capacityKW: 6,  perVisitCharges: 600,  perVisitAfterDiscount: 570,    yearlyVisitCharges: 7200,  finalAmount: 6840 },
+      { panels: 14, capacityKW: 8,  perVisitCharges: 700,  perVisitAfterDiscount: 665,    yearlyVisitCharges: 8400,  finalAmount: 7980 },
+      { panels: 15, capacityKW: 8,  perVisitCharges: 750,  perVisitAfterDiscount: 712.5,  yearlyVisitCharges: 9000,  finalAmount: 8550 },
+      { panels: 16, capacityKW: 10, perVisitCharges: 800,  perVisitAfterDiscount: 760,    yearlyVisitCharges: 9600,  finalAmount: 9120 },
+      { panels: 17, capacityKW: 10, perVisitCharges: 850,  perVisitAfterDiscount: 807.5,  yearlyVisitCharges: 10200, finalAmount: 9690 },
+      { panels: 18, capacityKW: 10, perVisitCharges: 900,  perVisitAfterDiscount: 855,    yearlyVisitCharges: 10800, finalAmount: 10260 },
+      { panels: 19, capacityKW: 10, perVisitCharges: 950,  perVisitAfterDiscount: 902.5,  yearlyVisitCharges: 11400, finalAmount: 10830 },
+      { panels: 20, capacityKW: 12, perVisitCharges: 1000, perVisitAfterDiscount: 950,    yearlyVisitCharges: 12000, finalAmount: 11400 },
+      { panels: 21, capacityKW: 12, perVisitCharges: 1050, perVisitAfterDiscount: 997.5,  yearlyVisitCharges: 12600, finalAmount: 11970 },
+      { panels: 24, capacityKW: 15, perVisitCharges: 1200, perVisitAfterDiscount: 1140,   yearlyVisitCharges: 14400, finalAmount: 13680 },
+      { panels: 25, capacityKW: 15, perVisitCharges: 1250, perVisitAfterDiscount: 1187.5, yearlyVisitCharges: 15000, finalAmount: 14250 },
+      { panels: 26, capacityKW: 15, perVisitCharges: 1300, perVisitAfterDiscount: 1235,   yearlyVisitCharges: 15600, finalAmount: 14820 },
+    ];
+
+    function findSlabByPanels(panels){
+      const exact = PRICING.find(x => x.panels === panels);
+      if (exact) return { slab: exact, exact: true };
+
+      let best = PRICING[0];
+      let bestDiff = Math.abs(PRICING[0].panels - panels);
+      for (const s of PRICING){
+        const d = Math.abs(s.panels - panels);
+        if (d < bestDiff){
+          best = s; bestDiff = d;
+        }
+      }
+      return { slab: best, exact: false };
+    }
+
+    function money(n){
+      const hasDecimal = Math.round(n * 100) % 100 !== 0;
+      return "₹" + (hasDecimal ? n.toFixed(2) : Math.round(n).toString());
+    }
+
+    function percent(a, b){
+      // percent saved = (a-b)/a * 100
+      if (!a || a <= 0) return 0;
+      return ((a - b) / a) * 100;
+    }
+
+    function formatPercent(p){
+      return (Math.round(p * 100) / 100).toFixed(2) + "%";
+    }
+
+    // Screens
+    const screenLogin  = document.getElementById("screenLogin");
+    const screenForm   = document.getElementById("screenForm");
+    const screenResult = document.getElementById("screenResult");
+
+    // Top back
+    const backBtn = document.getElementById("backBtn");
+
+    // Login refs
+    const custNameEl   = document.getElementById("custName");
+    const custMobileEl = document.getElementById("custMobile");
+    const loginBtn     = document.getElementById("loginBtn");
+    const loginError   = document.getElementById("loginError");
+
+    // Form refs
+    const panelsEl   = document.getElementById("panels");
+    const capEl      = document.getElementById("capacity");
+    const planEl     = document.getElementById("planType");
+    const getBtn     = document.getElementById("getEstimateBtn");
+    const formError  = document.getElementById("formError");
+
+    // Result refs
+    const processImg = document.getElementById("processImg");
+    const chipsWrap  = document.getElementById("chips");
+
+    const saveBadge  = document.getElementById("saveBadge");
+    const amcPerNew  = document.getElementById("amcPerNew");
+    const amcPerOld  = document.getElementById("amcPerOld");
+    const amcYearNew = document.getElementById("amcYearNew");
+    const amcYearOld = document.getElementById("amcYearOld");
+
+    const oneExpensiveLine = document.getElementById("oneExpensiveLine");
+    const oneServiceCharge = document.getElementById("oneServiceCharge");
+
+    const slabNote   = document.getElementById("slabNote");
+    const linkHint   = document.getElementById("linkHint");
+
+    const amcBookLink = document.getElementById("amcBookLink");
+    const oneBookLink = document.getElementById("oneBookLink");
+
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+
+    // Init
+    processImg.src = PROCESS_IMAGE_URL;
+
+    // Set clickable URLs
+    if (AMC_BOOK_URL && AMC_BOOK_URL !== "PASTE_AMC_BOOK_URL_HERE") amcBookLink.href = AMC_BOOK_URL;
+    if (ONE_TIME_BOOK_URL && ONE_TIME_BOOK_URL !== "PASTE_ONE_TIME_BOOK_URL_HERE") oneBookLink.href = ONE_TIME_BOOK_URL;
+
+    if (
+      (AMC_BOOK_URL === "PASTE_AMC_BOOK_URL_HERE") ||
+      (ONE_TIME_BOOK_URL === "PASTE_ONE_TIME_BOOK_URL_HERE")
+    ){
+      linkHint.textContent = "Tip: Code ke top me AMC_BOOK_URL aur ONE_TIME_BOOK_URL paste karo, tab BOOK NOW click par page open hoga.";
+    } else {
+      linkHint.textContent = "";
+    }
+
+    let lastData = null;
+
+    function showScreen(which){
+      screenLogin.classList.remove("active");
+      screenForm.classList.remove("active");
+      screenResult.classList.remove("active");
+      which.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    custMobileEl.addEventListener("input", () => {
+      custMobileEl.value = custMobileEl.value.replace(/\D/g,'').slice(0,10);
+    });
+
+    // LOGIN -> FORM
+    loginBtn.addEventListener("click", () => {
+      loginError.style.display = "none";
+      const name = (custNameEl.value || "").trim();
+      const mobile = (custMobileEl.value || "").trim();
+
+      if (name.length < 2){
+        loginError.textContent = "Please enter valid name.";
+        loginError.style.display = "block";
+        return;
+      }
+      if (!/^\d{10}$/.test(mobile)){
+        loginError.textContent = "Please enter valid 10 digit mobile number.";
+        loginError.style.display = "block";
+        return;
+      }
+      showScreen(screenForm);
+    });
+
+    // FORM -> RESULT
+    getBtn.addEventListener("click", () => {
+      formError.style.display = "none";
+
+      const panels = Math.max(1, parseInt(panelsEl.value || "0", 10));
+      const capacity = parseFloat(capEl.value || "0");
+      const plan = planEl.value || "Residential";
+
+      if (!panels || panels < 1){
+        formError.textContent = "Please enter valid number of panels.";
+        formError.style.display = "block";
+        return;
+      }
+      if (!capacity || capacity <= 0){
+        formError.textContent = "Please enter valid system capacity (KW).";
+        formError.style.display = "block";
+        return;
+      }
+
+      const res = findSlabByPanels(panels);
+      const slab = res.slab;
+
+      // Chips
+      chipsWrap.innerHTML = "";
+      const chip = (text, active=false) => {
+        const d = document.createElement("div");
+        d.className = "chip" + (active ? " active" : "");
+        d.textContent = text;
+        return d;
+      };
+      chipsWrap.appendChild(chip(plan.toUpperCase(), false));
+      chipsWrap.appendChild(chip("MONO", true));
+      // screenshot me 10 KW jaise show ho raha, aap capacity input se show karna chahte ho — isliye input value
+      chipsWrap.appendChild(chip(capacity.toFixed(2) + " KW", false));
+      chipsWrap.appendChild(chip(panels + " Panels", false));
+
+      // Discount style (strike old, show new)
+      amcPerNew.textContent  = money(slab.perVisitAfterDiscount);
+      amcPerOld.textContent  = money(slab.perVisitCharges);
+      amcYearNew.textContent = money(slab.finalAmount);
+      amcYearOld.textContent = money(slab.yearlyVisitCharges);
+
+      // Savings badge: compare yearly before vs after
+      const savedPct = percent(slab.yearlyVisitCharges, slab.finalAmount);
+      saveBadge.textContent = "SAVES " + formatPercent(savedPct);
+
+      // One-time: show original per-visit as service charge (like your screenshot)
+      oneServiceCharge.textContent = money(slab.perVisitCharges);
+
+      // One-time expensive text: same percentage idea (before vs after)
+      oneExpensiveLine.textContent = formatPercent(savedPct) + " Expensive than AMC package";
+
+      slabNote.textContent = (!res.exact)
+        ? `Note: ${panels} panels ka exact slab nahi mila, nearest slab ${slab.panels} panels apply hua (Capacity ${slab.capacityKW} kW).`
+        : "";
+
+      // store for pdf
+      lastData = {
+        customerName: (custNameEl.value || "").trim(),
+        customerMobile: (custMobileEl.value || "").trim(),
+        plan,
+        panels,
+        capacityShown: capacity.toFixed(2),
+
+        // one-time
+        oneTimeServiceCharge: slab.perVisitCharges,
+        oneTime12Charge: slab.yearlyVisitCharges,
+
+        // amc
+        amcPerCharge: slab.perVisitAfterDiscount,
+        amc12Charge: slab.finalAmount,
+
+        // savings
+        savingsAmount: slab.yearlyVisitCharges - slab.finalAmount,
+        savingsPercent: savedPct,
+
+        processImageUrl: PROCESS_IMAGE_URL
+      };
+
+      showScreen(screenResult);
+    });
+
+    // BACK
+    backBtn.addEventListener("click", () => {
+      if (screenResult.classList.contains("active")) return showScreen(screenForm);
+      if (screenForm.classList.contains("active")) return showScreen(screenLogin);
+    });
+
+    /**
+     * =========================
+     * PDF: 2nd image jaisa "Estimate" page with tables
+     * =========================
+     */
+    async function urlToDataURL(url){
+      if (!url) return null;
+      try{
+        const res = await fetch(url, { mode: "cors" });
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = () => resolve(null);
+          r.readAsDataURL(blob);
+        });
+      }catch(e){
+        return null;
+      }
+    }
+
+    function drawTable(doc, x, y, w, rows, headerText){
+      // simple 2-column table like screenshot
+      const rowH = 28;
+      const col1 = Math.round(w * 0.68);
+      const col2 = w - col1;
+
+      // header bar
+      doc.setFillColor(10, 95, 142);
+      doc.setDrawColor(10, 95, 142);
+      doc.rect(x, y, w, rowH, "F");
+      doc.setTextColor(255);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(12);
+      doc.text(headerText, x + w/2, y + 18, { align:"center" });
+
+      // body rows
+      doc.setDrawColor(20);
+      doc.setLineWidth(0.8);
+
+      let cy = y + rowH;
+
+      for (const r of rows){
+        doc.setFillColor(255,255,255);
+        doc.rect(x, cy, col1, rowH, "S");
+        doc.rect(x + col1, cy, col2, rowH, "S");
+
+        doc.setTextColor(0);
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(11);
+
+        doc.text(r.left, x + col1/2, cy + 18, { align:"center" });
+        doc.text(r.right, x + col1 + col2/2, cy + 18, { align:"center" });
+
+        cy += rowH;
+      }
+
+      return cy;
+    }
+
+    downloadBtn.addEventListener("click", async () => {
+      if (!lastData){
+        alert("Pehle estimate generate karo.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const margin = 50;
+      let y = 60;
+
+      // Optional logo (left)
+      const logoData = PDF_LOGO_URL ? await urlToDataURL(PDF_LOGO_URL) : null;
+      if (logoData){
+        doc.addImage(logoData, "PNG", margin, y - 18, 42, 42);
+      }
+
+      // Title "Estimate"
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(28);
+      doc.setTextColor(10, 95, 142);
+      doc.text("Estimate", pageW - margin, y + 10, { align:"right" });
+
+      y += 46;
+
+      // From / To block
+      doc.setTextColor(0);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text("From", margin, y);
+      doc.text("To", pageW - margin - 120, y);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(10);
+      const fromLines = [
+        FROM_COMPANY.name,
+        FROM_COMPANY.address1,
+        FROM_COMPANY.address2,
+        FROM_COMPANY.phone
+      ];
+      let fy = y + 16;
+      for (const line of fromLines){
+        doc.text(line, margin, fy);
+        fy += 14;
+      }
+
+      const toLines = [
+        lastData.customerName,
+        "+91 " + lastData.customerMobile
+      ];
+      let ty = y + 16;
+      for (const line of toLines){
+        doc.text(line, pageW - margin - 120, ty);
+        ty += 14;
+      }
+
+      y = Math.max(fy, ty) + 22;
+
+      // Estimate details
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text("Estimate Details", margin, y);
+      y += 14;
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(10);
+      const dt = new Date();
+      const dateStr = dt.toLocaleString();
+      doc.text(dateStr, margin, y); y += 14;
+
+      doc.text(`Type  : ${lastData.plan}`, margin, y); y += 14;
+      doc.text(`Solar Capacity : ${lastData.capacityShown} KW`, margin, y); y += 14;
+      doc.text(`Number of Solar Panels : ${lastData.panels}`, margin, y); y += 24;
+
+      // Tables
+      const tableX = margin;
+      const tableW = pageW - margin*2;
+
+      // One-time table
+      y = drawTable(doc, tableX, y, tableW, [
+        { left: "One Time Cleaning Service Charge", right: `${(lastData.oneTimeServiceCharge).toFixed(2)} Rupees` },
+        { left: "12 One Time Services Charge", right: `${(lastData.oneTime12Charge).toFixed(2)} Rupees` }
+      ], "One Time Service Details") + 30;
+
+      // AMC table
+      y = drawTable(doc, tableX, y, tableW, [
+        { left: "per Cleaning Service Charge", right: `${(lastData.amcPerCharge).toFixed(2)} Rupees` },
+        { left: "AMC Cleaning 12-Service Charge", right: `${(lastData.amc12Charge).toFixed(2)} Rupees` },
+        { left: "Savings", right: `${(lastData.savingsAmount).toFixed(2)} Rupees` }
+      ], "AMC Service Plan Details") + 38;
+
+      // Green slogan
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(26);
+      doc.setTextColor(39, 160, 75);
+      doc.text("You Pay From What You Save", pageW/2, y, { align:"center" });
+      y += 40;
+
+      // Optional footer logo
+      const footerLogoData = PDF_FOOTER_LOGO_URL ? await urlToDataURL(PDF_FOOTER_LOGO_URL) : null;
+      if (footerLogoData){
+        doc.addImage(footerLogoData, "PNG", (pageW/2)-45, y, 90, 50);
+      }
+
+      const fileName = `Estimate-${lastData.customerName.replace(/\s+/g,'_')}-${lastData.panels}panels.pdf`;
+      doc.save(fileName);
+    });
+  </script>
+</body>
+</html>
