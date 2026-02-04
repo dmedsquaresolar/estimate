@@ -93,12 +93,14 @@
     }
 
     .process-img{
-      width:100%;
-      height: 190px;
-      object-fit: cover;
-      display:block;
-      background:#eef3f8;
-    }
+  width:100%;
+  height: 190px;
+  object-fit: cover;
+  display:block;
+  background:#eef3f8;
+  border: 0;
+}
+.process-img::-webkit-media-controls { display:none !important; }
 
     /* Screens */
     .screen{ display:none; }
@@ -149,6 +151,7 @@
       margin-top: 10px;
     }
     .btn:active{transform:scale(.99);}
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
 
     .btn-secondary{
       width:100%;
@@ -326,10 +329,6 @@
       display:none;
     }
 
-    /* Result PDF container spacing */
-    .spacer{ height: 6px; }
-
-    /* Small helper */
     .muted{ color: var(--muted); font-size: 12px; margin-top: 8px; }
   </style>
 
@@ -361,22 +360,18 @@
 
       <button class="btn" id="loginBtn">Continue</button>
       <div class="error" id="loginError"></div>
-
-      <div class="note">
-        Next step me aap Panels, Capacity aur Plan Type select karke estimate nikal sakte ho.
-      </div>
     </div>
 
     <!-- SCREEN 1: FORM -->
     <div id="screenForm" class="screen">
       <div class="field">
         <div class="label">Number of Panels</div>
-        <input id="panels" class="input" type="number" min="1" step="1" placeholder="12" value="12">
+        <input id="panels" class="input" type="number" min="1" step="1" placeholder="12">
       </div>
 
       <div class="field">
         <div class="label">System Capacity in KW</div>
-        <input id="capacity" class="input" type="number" min="0" step="0.01" placeholder="3.24" value="3.24">
+        <input id="capacity" class="input" type="number" min="0" step="0.01" placeholder="5"">
       </div>
 
       <div class="field">
@@ -389,18 +384,15 @@
 
       <button class="btn" id="getEstimateBtn">Get Estimate</button>
       <div class="error" id="formError"></div>
-
-      <div class="note">
-        Note: Panel slabs ke hisaab se estimate nikalta hai (nearest slab apply hota hai).
-      </div>
     </div>
 
     <!-- SCREEN 2: RESULT -->
     <div id="screenResult" class="screen">
       <h2>Our Professional Service Process</h2>
       <div class="card">
-        <img id="processImg" class="process-img" alt="Process" />
-      </div>
+  <video id="processImg" class="process-img" autoplay muted loop playsinline preload="auto"></video>
+</div>
+
 
       <h3>Solar System Details</h3>
       <div class="chip-row" id="chips"></div>
@@ -422,11 +414,9 @@
           </ul>
 
           <div class="amc-bottom">
-            <!-- ✅ clickable -->
             <a id="amcBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
 
             <div class="price-block">
-              <!-- ✅ strike old + show new -->
               <div class="price-line">
                 <span class="price-label">per service charge :</span>
                 <span class="price-new" id="amcPerNew">₹0</span>
@@ -453,7 +443,6 @@
           </ul>
 
           <div class="one-bottom">
-            <!-- ✅ clickable -->
             <a id="oneBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
               BOOK NOW
             </a>
@@ -465,7 +454,6 @@
         </div>
       </div>
 
-      <!-- Download -->
       <button class="btn-secondary" id="downloadPdfBtn">Download Estimate</button>
 
       <div class="note" id="slabNote"></div>
@@ -475,14 +463,10 @@
   </div>
 
   <script>
-    /**
-     * =========================
-     * CONFIG (yahan aap links paste karo)
-     * =========================
-     */
-    const PROCESS_IMAGE_URL = "PASTE_PROCESS_IMAGE_URL_HERE";   // process image URL
+    const PROCESS_IMAGE_URL = "IMG_7949_exact.mp4";
 
-    // Company details for PDF (2nd photo jaisa)
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_Vj3QU_PfVOpmyVGlPEPsuH6g3x0vdc5DOrnOTAXZelsZD9uuDioDlFPs4r8IbluK3YSAhU9HgAie/pub?gid=124219160&single=true&output=csv";
+
     const FROM_COMPANY = {
       name: "SunTech Engineering",
       address1: "429, Lilleria Paramount, Near Tulsidham Circle",
@@ -490,37 +474,142 @@
       phone: "+91 9998546315"
     };
 
-    // Optional logos for PDF (if you have URL, paste; else keep blank)
-    const PDF_LOGO_URL = "";      // left logo
-    const PDF_FOOTER_LOGO_URL = ""; // bottom logo
+    const PDF_LOGO_URL = "";
+    const PDF_FOOTER_LOGO_URL = "";
 
-    /**
-     * =========================
-     * PRICING TABLE (PDF)
-     * columns:
-     * - perVisitCharges (before discount)  -> show STRIKE
-     * - perVisitAfterDiscount (after)      -> show NEW
-     * - yearlyVisitCharges (before)        -> show STRIKE
-     * - finalAmount (after)                -> show NEW
-     */
-    const PRICING = [
-      { panels: 6,  capacityKW: 3,  perVisitCharges: 330,  perVisitAfterDiscount: 313.5,  yearlyVisitCharges: 3960,  finalAmount: 3762 },
-      { panels: 9,  capacityKW: 5,  perVisitCharges: 459,  perVisitAfterDiscount: 436.05, yearlyVisitCharges: 5508,  finalAmount: 5232.6 },
-      { panels: 10, capacityKW: 5,  perVisitCharges: 480,  perVisitAfterDiscount: 456,    yearlyVisitCharges: 5760,  finalAmount: 5472 },
-      { panels: 11, capacityKW: 6,  perVisitCharges: 550,  perVisitAfterDiscount: 522.5,  yearlyVisitCharges: 6600,  finalAmount: 6270 },
-      { panels: 12, capacityKW: 6,  perVisitCharges: 600,  perVisitAfterDiscount: 570,    yearlyVisitCharges: 7200,  finalAmount: 6840 },
-      { panels: 14, capacityKW: 8,  perVisitCharges: 700,  perVisitAfterDiscount: 665,    yearlyVisitCharges: 8400,  finalAmount: 7980 },
-      { panels: 15, capacityKW: 8,  perVisitCharges: 750,  perVisitAfterDiscount: 712.5,  yearlyVisitCharges: 9000,  finalAmount: 8550 },
-      { panels: 16, capacityKW: 10, perVisitCharges: 800,  perVisitAfterDiscount: 760,    yearlyVisitCharges: 9600,  finalAmount: 9120 },
-      { panels: 17, capacityKW: 10, perVisitCharges: 850,  perVisitAfterDiscount: 807.5,  yearlyVisitCharges: 10200, finalAmount: 9690 },
-      { panels: 18, capacityKW: 10, perVisitCharges: 900,  perVisitAfterDiscount: 855,    yearlyVisitCharges: 10800, finalAmount: 10260 },
-      { panels: 19, capacityKW: 10, perVisitCharges: 950,  perVisitAfterDiscount: 902.5,  yearlyVisitCharges: 11400, finalAmount: 10830 },
-      { panels: 20, capacityKW: 12, perVisitCharges: 1000, perVisitAfterDiscount: 950,    yearlyVisitCharges: 12000, finalAmount: 11400 },
-      { panels: 21, capacityKW: 12, perVisitCharges: 1050, perVisitAfterDiscount: 997.5,  yearlyVisitCharges: 12600, finalAmount: 11970 },
-      { panels: 24, capacityKW: 15, perVisitCharges: 1200, perVisitAfterDiscount: 1140,   yearlyVisitCharges: 14400, finalAmount: 13680 },
-      { panels: 25, capacityKW: 15, perVisitCharges: 1250, perVisitAfterDiscount: 1187.5, yearlyVisitCharges: 15000, finalAmount: 14250 },
-      { panels: 26, capacityKW: 15, perVisitCharges: 1300, perVisitAfterDiscount: 1235,   yearlyVisitCharges: 15600, finalAmount: 14820 },
-    ];
+    let PRICING = [];
+    let PRICING_READY = false;
+
+    function toNum(v){
+      const s = (v ?? "").toString().trim();
+      const cleaned = s.replace(/[₹,\s]/g,'');
+      const n = parseFloat(cleaned);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function detectDelimiter(line){
+      if (line.includes(',')) return ',';
+      if (line.includes('\t')) return '\t';
+      if (line.includes(';')) return ';';
+      return ',';
+    }
+
+    function parseLine(line, delim){
+      const out = [];
+      let cur = "";
+      let inQ = false;
+      for (let i=0;i<line.length;i++){
+        const ch = line[i];
+        if (ch === '"'){
+          if (inQ && line[i+1] === '"'){ cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === delim && !inQ){
+          out.push(cur);
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function normalizeKey(k){
+      return (k || "").toString().trim().toLowerCase().replace(/\s+/g,'');
+    }
+
+    function withCacheBuster(url){
+      return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+    }
+
+    async function tryFetchText(url){
+      const r = await fetch(withCacheBuster(url), { method:"GET", cache:"no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.text();
+    }
+
+    async function fetchCSVTextHard(rawUrl){
+      // ✅ 1) direct
+      try{
+        const t = await tryFetchText(rawUrl);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 2) allorigins (CORS safe)
+      try{
+        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rawUrl);
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 3) corsproxy.io (CORS safe)
+      try{
+        const proxy = "https://corsproxy.io/?" + encodeURIComponent(rawUrl);
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 4) jina.ai fallback
+      try{
+        const proxy = "https://r.jina.ai/" + rawUrl;
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      return "";
+    }
+
+    async function loadPricingFromSheet(){
+      try{
+        let txt = await fetchCSVTextHard(SHEET_CSV_URL);
+        if (!txt) return false;
+
+        txt = txt.replace(/^\uFEFF/, '');
+        const lines = txt.replace(/\r/g,'').split('\n').filter(l => l.trim().length);
+        if (!lines.length) return false;
+
+        const delim = detectDelimiter(lines[0]);
+        const headersRaw = parseLine(lines[0], delim);
+        const headers = headersRaw.map(h => normalizeKey(h));
+
+        const idx = (name) => headers.indexOf(normalizeKey(name));
+
+        const iPanels  = idx("panels");
+        const iCapKW   = idx("capacitykw");
+        const iPer     = idx("pervisitcharges");
+        const iPerAft  = idx("pervisitafterdiscount");
+        const iYear    = idx("yearlyvisitcharges");
+        const iFinal   = idx("finalamount");
+
+        if ([iPanels,iCapKW,iPer,iPerAft,iYear,iFinal].some(i => i < 0)){
+          return false;
+        }
+
+        const arr = [];
+        for (let r=1;r<lines.length;r++){
+          const cols = parseLine(lines[r], delim);
+          const p = parseInt((cols[iPanels] || "").toString().trim(), 10);
+          if (!p || p <= 0) continue;
+
+          const item = {
+            panels: p,
+            capacityKW: toNum(cols[iCapKW]),
+            perVisitCharges: toNum(cols[iPer]),
+            perVisitAfterDiscount: toNum(cols[iPerAft]),
+            yearlyVisitCharges: toNum(cols[iYear]),
+            finalAmount: toNum(cols[iFinal]),
+          };
+          arr.push(item);
+        }
+
+        arr.sort((a,b) => a.panels - b.panels);
+        PRICING = arr;
+        PRICING_READY = PRICING.length > 0;
+        return PRICING_READY;
+      }catch(e){
+        return false;
+      }
+    }
 
     function findSlabByPanels(panels){
       const exact = PRICING.find(x => x.panels === panels);
@@ -543,7 +632,6 @@
     }
 
     function percent(a, b){
-      // percent saved = (a-b)/a * 100
       if (!a || a <= 0) return 0;
       return ((a - b) / a) * 100;
     }
@@ -552,28 +640,23 @@
       return (Math.round(p * 100) / 100).toFixed(2) + "%";
     }
 
-    // Screens
     const screenLogin  = document.getElementById("screenLogin");
     const screenForm   = document.getElementById("screenForm");
     const screenResult = document.getElementById("screenResult");
 
-    // Top back
     const backBtn = document.getElementById("backBtn");
 
-    // Login refs
     const custNameEl   = document.getElementById("custName");
     const custMobileEl = document.getElementById("custMobile");
     const loginBtn     = document.getElementById("loginBtn");
     const loginError   = document.getElementById("loginError");
 
-    // Form refs
     const panelsEl   = document.getElementById("panels");
     const capEl      = document.getElementById("capacity");
     const planEl     = document.getElementById("planType");
     const getBtn     = document.getElementById("getEstimateBtn");
     const formError  = document.getElementById("formError");
 
-    // Result refs
     const processImg = document.getElementById("processImg");
     const chipsWrap  = document.getElementById("chips");
 
@@ -591,8 +674,27 @@
 
     const downloadBtn = document.getElementById("downloadPdfBtn");
 
-    // Init
     processImg.src = PROCESS_IMAGE_URL;
+
+processImg.muted = true;
+processImg.autoplay = true;
+processImg.loop = true;
+processImg.playsInline = true;
+processImg.preload = "auto";
+processImg.controls = false;
+
+processImg.addEventListener("loadedmetadata", () => {
+  processImg.play().catch(()=>{});
+});
+
+processImg.addEventListener("canplay", () => {
+  processImg.play().catch(()=>{});
+});
+
+document.addEventListener("click", () => {
+  if (processImg.paused) processImg.play().catch(()=>{});
+}, { once:true });
+
 
     let lastData = null;
 
@@ -608,7 +710,32 @@
       custMobileEl.value = custMobileEl.value.replace(/\D/g,'').slice(0,10);
     });
 
-    // LOGIN -> FORM
+    function setPricingUIState(){
+      if (PRICING_READY){
+        formError.style.display = "none";
+        getBtn.disabled = false;
+      } else {
+        formError.textContent = "Pricing load ho rahi hai... (2-3 sec) Please wait.";
+        formError.style.display = "block";
+        getBtn.disabled = true;
+      }
+    }
+
+    // ✅ load pricing at start
+    (async () => {
+      setPricingUIState();
+      const ok = await loadPricingFromSheet();
+      PRICING_READY = !!ok;
+      if (PRICING_READY){
+        formError.style.display = "none";
+        getBtn.disabled = false;
+      } else {
+        formError.textContent = "Pricing load nahi hui. Please page reload karo.";
+        formError.style.display = "block";
+        getBtn.disabled = true;
+      }
+    })();
+
     loginBtn.addEventListener("click", () => {
       loginError.style.display = "none";
       const name = (custNameEl.value || "").trim();
@@ -625,9 +752,9 @@
         return;
       }
       showScreen(screenForm);
+      setPricingUIState();
     });
 
-    // FORM -> RESULT
     getBtn.addEventListener("click", () => {
       formError.style.display = "none";
 
@@ -646,10 +773,15 @@
         return;
       }
 
+      if (!PRICING_READY || !PRICING || PRICING.length === 0){
+        formError.textContent = "Pricing load nahi hui. Please page reload karo.";
+        formError.style.display = "block";
+        return;
+      }
+
       const res = findSlabByPanels(panels);
       const slab = res.slab;
 
-      // Chips
       chipsWrap.innerHTML = "";
       const chip = (text, active=false) => {
         const d = document.createElement("div");
@@ -659,31 +791,24 @@
       };
       chipsWrap.appendChild(chip(plan.toUpperCase(), false));
       chipsWrap.appendChild(chip("MONO", true));
-      // screenshot me 10 KW jaise show ho raha, aap capacity input se show karna chahte ho — isliye input value
       chipsWrap.appendChild(chip(capacity.toFixed(2) + " KW", false));
       chipsWrap.appendChild(chip(panels + " Panels", false));
 
-      // Discount style (strike old, show new)
       amcPerNew.textContent  = money(slab.perVisitAfterDiscount);
       amcPerOld.textContent  = money(slab.perVisitCharges);
       amcYearNew.textContent = money(slab.finalAmount);
       amcYearOld.textContent = money(slab.yearlyVisitCharges);
 
-      // Savings badge: compare yearly before vs after
       const savedPct = percent(slab.yearlyVisitCharges, slab.finalAmount);
       saveBadge.textContent = "SAVES " + formatPercent(savedPct);
 
-      // One-time: show original per-visit as service charge (like your screenshot)
       oneServiceCharge.textContent = money(slab.perVisitCharges);
-
-      // One-time expensive text: same percentage idea (before vs after)
       oneExpensiveLine.textContent = formatPercent(savedPct) + " Expensive than AMC package";
 
       slabNote.textContent = (!res.exact)
         ? `Note: ${panels} panels ka exact slab nahi mila, nearest slab ${slab.panels} panels apply hua (Capacity ${slab.capacityKW} kW).`
         : "";
 
-      // store for pdf
       lastData = {
         customerName: (custNameEl.value || "").trim(),
         customerMobile: (custMobileEl.value || "").trim(),
@@ -691,15 +816,12 @@
         panels,
         capacityShown: capacity.toFixed(2),
 
-        // one-time
         oneTimeServiceCharge: slab.perVisitCharges,
         oneTime12Charge: slab.yearlyVisitCharges,
 
-        // amc
         amcPerCharge: slab.perVisitAfterDiscount,
         amc12Charge: slab.finalAmount,
 
-        // savings
         savingsAmount: slab.yearlyVisitCharges - slab.finalAmount,
         savingsPercent: savedPct,
 
@@ -709,21 +831,15 @@
       showScreen(screenResult);
     });
 
-    // BACK
     backBtn.addEventListener("click", () => {
       if (screenResult.classList.contains("active")) return showScreen(screenForm);
       if (screenForm.classList.contains("active")) return showScreen(screenLogin);
     });
 
-    /**
-     * =========================
-     * PDF: 2nd image jaisa "Estimate" page with tables
-     * =========================
-     */
     async function urlToDataURL(url){
       if (!url) return null;
       try{
-        const res = await fetch(url, { mode: "cors" });
+        const res = await fetch(url, { mode: "cors", cache:"no-store" });
         const blob = await res.blob();
         return await new Promise((resolve) => {
           const r = new FileReader();
@@ -737,12 +853,10 @@
     }
 
     function drawTable(doc, x, y, w, rows, headerText){
-      // simple 2-column table like screenshot
       const rowH = 28;
       const col1 = Math.round(w * 0.68);
       const col2 = w - col1;
 
-      // header bar
       doc.setFillColor(10, 95, 142);
       doc.setDrawColor(10, 95, 142);
       doc.rect(x, y, w, rowH, "F");
@@ -751,7 +865,6 @@
       doc.setFontSize(12);
       doc.text(headerText, x + w/2, y + 18, { align:"center" });
 
-      // body rows
       doc.setDrawColor(20);
       doc.setLineWidth(0.8);
 
@@ -788,13 +901,11 @@
       const margin = 50;
       let y = 60;
 
-      // Optional logo (left)
       const logoData = PDF_LOGO_URL ? await urlToDataURL(PDF_LOGO_URL) : null;
       if (logoData){
         doc.addImage(logoData, "PNG", margin, y - 18, 42, 42);
       }
 
-      // Title "Estimate"
       doc.setFont("helvetica","bold");
       doc.setFontSize(28);
       doc.setTextColor(10, 95, 142);
@@ -802,7 +913,6 @@
 
       y += 46;
 
-      // From / To block
       doc.setTextColor(0);
       doc.setFont("helvetica","bold");
       doc.setFontSize(11);
@@ -835,7 +945,6 @@
 
       y = Math.max(fy, ty) + 22;
 
-      // Estimate details
       doc.setFont("helvetica","bold");
       doc.setFontSize(11);
       doc.text("Estimate Details", margin, y);
@@ -851,31 +960,26 @@
       doc.text(`Solar Capacity : ${lastData.capacityShown} KW`, margin, y); y += 14;
       doc.text(`Number of Solar Panels : ${lastData.panels}`, margin, y); y += 24;
 
-      // Tables
       const tableX = margin;
       const tableW = pageW - margin*2;
 
-      // One-time table
       y = drawTable(doc, tableX, y, tableW, [
         { left: "One Time Cleaning Service Charge", right: `${(lastData.oneTimeServiceCharge).toFixed(2)} Rupees` },
         { left: "12 One Time Services Charge", right: `${(lastData.oneTime12Charge).toFixed(2)} Rupees` }
       ], "One Time Service Details") + 30;
 
-      // AMC table
       y = drawTable(doc, tableX, y, tableW, [
         { left: "per Cleaning Service Charge", right: `${(lastData.amcPerCharge).toFixed(2)} Rupees` },
         { left: "AMC Cleaning 12-Service Charge", right: `${(lastData.amc12Charge).toFixed(2)} Rupees` },
         { left: "Savings", right: `${(lastData.savingsAmount).toFixed(2)} Rupees` }
       ], "AMC Service Plan Details") + 38;
 
-      // Green slogan
       doc.setFont("helvetica","bold");
       doc.setFontSize(26);
       doc.setTextColor(39, 160, 75);
       doc.text("You Pay From What You Save", pageW/2, y, { align:"center" });
       y += 40;
 
-      // Optional footer logo
       const footerLogoData = PDF_FOOTER_LOGO_URL ? await urlToDataURL(PDF_FOOTER_LOGO_URL) : null;
       if (footerLogoData){
         doc.addImage(footerLogoData, "PNG", (pageW/2)-45, y, 90, 50);
