@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Estimate</title>
+
+  <style>
+    :root{
+      --blue2:#0b5f9a;
+      --blueCard:#0a5f8e;
+      --yellow:#f6c10a;
+      --bg:#ffffff;
+      --text:#0b1b2b;
+      --muted:#6b7b8c;
+      --cardRadius:18px;
+      --shadow: 0 10px 26px rgba(0,0,0,.14);
+      --shadowSoft: 0 8px 18px rgba(0,0,0,.10);
+      --border: 1px solid rgba(0,0,0,.08);
+      --chipBg:#f5f7fb;
+      --chipActive:#d8ffe6;
+      --chipActiveText:#1b7a3a;
+      --grayCard:#efefef;
+      --strike:#b8c2cc;
+      --green:#27a04b;
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 14px 14px 28px;
+    }
+
+    /* Top Bar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #fff;
+      border-bottom: var(--border);
+      box-shadow: 0 6px 14px rgba(0,0,0,.06);
+    }
+    .topbar-inner{
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 14px 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .back{
+      width:40px;height:40px;
+      border-radius:999px;
+      border: var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      color: var(--text);
+      box-shadow: var(--shadowSoft);
+      cursor:pointer;
+      user-select:none;
+    }
+    .title{
+      flex:1;
+      text-align:center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #1c7bb8;
+      margin-right: 40px;
+    }
+
+    h2, h3{
+      font-size: 22px;
+      margin: 18px 2px 10px;
+      font-weight: 900;
+    }
+
+    .card{
+      border-radius: var(--cardRadius);
+      box-shadow: var(--shadow);
+      border: var(--border);
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .process-img{
+  width:100%;
+  height: 190px;
+  object-fit: cover;
+  display:block;
+  background:#eef3f8;
+  border: 0;
+}
+.process-img::-webkit-media-controls { display:none !important; }
+
+    /* Screens */
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    /* Form fields */
+    .field{ margin: 14px 0; }
+    .label{
+      font-size: 14px;
+      color:#2a3542;
+      font-weight: 700;
+      margin: 0 0 8px 2px;
+    }
+    .input, .select{
+      width:100%;
+      border: var(--border);
+      border-radius: 12px;
+      padding: 14px 14px;
+      font-size: 18px;
+      outline: none;
+      background:#fff;
+    }
+    .input::placeholder{color:#9aa7b5;}
+    .select{
+      appearance:none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #111 50%),
+        linear-gradient(135deg, #111 50%, transparent 50%);
+      background-position:
+        calc(100% - 20px) calc(50% - 4px),
+        calc(100% - 14px) calc(50% - 4px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 44px;
+    }
+
+    .btn{
+      width:100%;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 16px;
+      font-size: 22px;
+      font-weight: 900;
+      background: var(--blue2);
+      color:#fff;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      margin-top: 10px;
+    }
+    .btn:active{transform:scale(.99);}
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    .btn-secondary{
+      width:100%;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 16px;
+      font-size: 22px;
+      font-weight: 950;
+      background: var(--yellow);
+      color:#0b2540;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      margin-top: 14px;
+    }
+    .btn-secondary:active{transform:scale(.99);}
+
+    .chip-row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 14px;
+      border-radius: 14px;
+      border: var(--border);
+      background:#fff;
+      box-shadow: var(--shadowSoft);
+    }
+    .chip{
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: var(--border);
+      background: var(--chipBg);
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .chip.active{
+      background: var(--chipActive);
+      color: var(--chipActiveText);
+      border-color: rgba(27,122,58,.25);
+    }
+
+    /* Estimate cards */
+    .estimate-card{
+      border-radius: var(--cardRadius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: var(--border);
+      margin-top: 14px;
+      background:#fff;
+    }
+
+    /* AMC Card */
+    .amc-wrap{
+      background: var(--blueCard);
+      color:#fff;
+      padding: 16px 16px 16px;
+      position: relative;
+    }
+    .amc-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .amc-title{
+      font-size: 20px;
+      font-weight: 950;
+      margin:0;
+    }
+    .save-badge{
+      background: var(--yellow);
+      color:#0b2540;
+      font-weight: 950;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .bullets{
+      margin: 12px 0 10px 16px;
+      padding:0;
+      color:#eaf5ff;
+      font-weight: 650;
+      line-height: 1.35;
+      font-size: 15px;
+    }
+    .amc-bottom{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding-top: 8px;
+    }
+    .book-link{
+      font-weight: 950;
+      color: var(--yellow);
+      letter-spacing: .5px;
+      text-decoration:none;
+      user-select:none;
+    }
+    .book-link:active{ opacity:.9; }
+
+    .price-block{
+      text-align:right;
+      font-weight: 900;
+    }
+    .price-line{
+      font-size: 18px;
+      margin: 6px 0;
+      color:#eaf5ff;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:baseline;
+      flex-wrap: wrap;
+    }
+    .price-label{ color:#eaf5ff; font-weight: 700; }
+    .price-new{
+      color: var(--yellow);
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .price-old{
+      color: var(--strike);
+      text-decoration: line-through;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    /* One-time card */
+    .one{
+      background: var(--grayCard);
+      padding: 16px;
+    }
+    .one h4{
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 950;
+      color:#1d2630;
+    }
+    .one ul{
+      margin: 6px 0 14px 18px;
+      padding:0;
+      color:#2c3b4a;
+      font-weight: 650;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+    .one-bottom{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding-top: 6px;
+    }
+    .one-price{
+      text-align:right;
+      font-weight: 900;
+      color:#1d2630;
+      font-size: 18px;
+    }
+
+    .note{
+      margin: 10px 2px 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .error{
+      margin-top: 10px;
+      color:#b00020;
+      font-weight: 700;
+      font-size: 13px;
+      display:none;
+    }
+
+    .muted{ color: var(--muted); font-size: 12px; margin-top: 8px; }
+  </style>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="back" id="backBtn" aria-label="Back">←</div>
+      <div class="title">Service Estimate</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- SCREEN 0: LOGIN -->
+    <div id="screenLogin" class="screen active">
+      <div class="field">
+        <div class="label">Name</div>
+        <input id="custName" class="input" type="text" placeholder="Enter your name">
+      </div>
+
+      <div class="field">
+        <div class="label">Mobile Number</div>
+        <input id="custMobile" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit mobile">
+      </div>
+
+      <button class="btn" id="loginBtn">Continue</button>
+      <div class="error" id="loginError"></div>
+    </div>
+
+    <!-- SCREEN 1: FORM -->
+    <div id="screenForm" class="screen">
+      <div class="field">
+        <div class="label">Number of Panels</div>
+        <input id="panels" class="input" type="number" min="1" step="1" placeholder="12">
+      </div>
+
+      <div class="field">
+        <div class="label">System Capacity in KW</div>
+        <input id="capacity" class="input" type="number" min="0" step="0.01" placeholder="5"">
+      </div>
+
+      <div class="field">
+        <div class="label">Plan Type</div>
+        <select id="planType" class="select">
+          <option value="Residential" selected>Residential</option>
+          <option value="Commercial">Commercial</option>
+        </select>
+      </div>
+
+      <button class="btn" id="getEstimateBtn">Get Estimate</button>
+      <div class="error" id="formError"></div>
+    </div>
+
+    <!-- SCREEN 2: RESULT -->
+    <div id="screenResult" class="screen">
+      <h2>Our Professional Service Process</h2>
+      <div class="card">
+  <video id="processImg" class="process-img" autoplay muted loop playsinline preload="auto"></video>
+</div>
+
+
+      <h3>Solar System Details</h3>
+      <div class="chip-row" id="chips"></div>
+
+      <h3>Estimates</h3>
+
+      <!-- AMC CARD -->
+      <div class="estimate-card">
+        <div class="amc-wrap">
+          <div class="amc-top">
+            <div class="amc-title">AMC - 12 Services Annually</div>
+            <div class="save-badge" id="saveBadge">SAVES 0%</div>
+          </div>
+
+          <ul class="bullets">
+            <li>1 Service per month</li>
+            <li>Effective time duration for feasibility</li>
+            <li>100% Uptime of Solar Roof Top System</li>
+          </ul>
+
+          <div class="amc-bottom">
+            <a id="amcBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
+
+            <div class="price-block">
+              <div class="price-line">
+                <span class="price-label">per service charge :</span>
+                <span class="price-new" id="amcPerNew">₹0</span>
+                <span class="price-old" id="amcPerOld">₹0</span>
+              </div>
+              <div class="price-line">
+                <span class="price-label">pay Annually :</span>
+                <span class="price-new" id="amcYearNew">₹0</span>
+                <span class="price-old" id="amcYearOld">₹0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ONE TIME CARD -->
+      <div class="estimate-card">
+        <div class="one">
+          <h4>One-time service</h4>
+          <ul>
+            <li id="oneExpensiveLine">0% Expensive than AMC package</li>
+            <li>Hassle to schedule service every month</li>
+            <li>Manual Solar Roof Top Checking Required</li>
+          </ul>
+
+          <div class="one-bottom">
+            <a id="oneBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
+              BOOK NOW
+            </a>
+
+            <div class="one-price">
+              <div>service charge : <span id="oneServiceCharge">₹0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-secondary" id="downloadPdfBtn">Download Estimate</button>
+
+      <div class="note" id="slabNote"></div>
+      <div class="muted" id="linkHint"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const PROCESS_IMAGE_URL = "IMG_7949_exact.mp4";
+
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_Vj3QU_PfVOpmyVGlPEPsuH6g3x0vdc5DOrnOTAXZelsZD9uuDioDlFPs4r8IbluK3YSAhU9HgAie/pub?gid=124219160&single=true&output=csv";
+
+    const FROM_COMPANY = {
+      name: "D Square Solar Services",
+      address1: "3rd Floor, ARG North Avenue, 323, Sikar Rd",
+      address2: "Vishwakarma Industrial Area, Jaipur, Rajasthan 302013",
+      phone: "+91 9929466404"
+    };
+
+    const PDF_LOGO_URL="https://lh3.googleusercontent.com/d/1gQMyVdYZmWchn-wh0q7QVxDKe0mxk8Kb";
+    const PDF_FOOTER_LOGO_URL = "";
+
+    const LEADS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby6J1PUZdgXAh-T7GVN5SJtw3lM_JeFUyDtj6Zk71ppOik-4wTkqW6zFyswwagNRs76UQ/exec";
+
+    let PRICING = [];
+    let PRICING_READY = false;
+
+    function toNum(v){
+      const s = (v ?? "").toString().trim();
+      const cleaned = s.replace(/[₹,\s]/g,'');
+      const n = parseFloat(cleaned);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function detectDelimiter(line){
+      if (line.includes(',')) return ',';
+      if (line.includes('\t')) return '\t';
+      if (line.includes(';')) return ';';
+      return ',';
+    }
+
+    function parseLine(line, delim){
+      const out = [];
+      let cur = "";
+      let inQ = false;
+      for (let i=0;i<line.length;i++){
+        const ch = line[i];
+        if (ch === '"'){
+          if (inQ && line[i+1] === '"'){ cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === delim && !inQ){
+          out.push(cur);
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function normalizeKey(k){
+      return (k || "").toString().trim().toLowerCase().replace(/\s+/g,'');
+    }
+
+    function withCacheBuster(url){
+      return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+    }
+
+    async function tryFetchText(url){
+      const r = await fetch(withCacheBuster(url), { method:"GET", cache:"no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.text();
+    }
+
+    async function fetchCSVTextHard(rawUrl){
+      // ✅ 1) direct
+      try{
+        const t = await tryFetchText(rawUrl);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 2) allorigins (CORS safe)
+      try{
+        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rawUrl);
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 3) corsproxy.io (CORS safe)
+      try{
+        const proxy = "https://corsproxy.io/?" + encodeURIComponent(rawUrl);
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      // ✅ 4) jina.ai fallback
+      try{
+        const proxy = "https://r.jina.ai/" + rawUrl;
+        const t = await tryFetchText(proxy);
+        if (t && t.trim()) return t;
+      }catch(e){}
+
+      return "";
+    }
+
+    async function loadPricingFromSheet(){
+      try{
+        let txt = await fetchCSVTextHard(SHEET_CSV_URL);
+        if (!txt) return false;
+
+        txt = txt.replace(/^\uFEFF/, '');
+        const lines = txt.replace(/\r/g,'').split('\n').filter(l => l.trim().length);
+        if (!lines.length) return false;
+
+        const delim = detectDelimiter(lines[0]);
+        const headersRaw = parseLine(lines[0], delim);
+        const headers = headersRaw.map(h => normalizeKey(h));
+
+        const idx = (name) => headers.indexOf(normalizeKey(name));
+
+        const iPanels  = idx("panels");
+        const iCapKW   = idx("capacitykw");
+        const iPer     = idx("pervisitcharges");
+        const iPerAft  = idx("pervisitafterdiscount");
+        const iYear    = idx("yearlyvisitcharges");
+        const iFinal   = idx("finalamount");
+
+        if ([iPanels,iCapKW,iPer,iPerAft,iYear,iFinal].some(i => i < 0)){
+          return false;
+        }
+
+        const arr = [];
+        for (let r=1;r<lines.length;r++){
+          const cols = parseLine(lines[r], delim);
+          const p = parseInt((cols[iPanels] || "").toString().trim(), 10);
+          if (!p || p <= 0) continue;
+
+          const item = {
+            panels: p,
+            capacityKW: toNum(cols[iCapKW]),
+            perVisitCharges: toNum(cols[iPer]),
+            perVisitAfterDiscount: toNum(cols[iPerAft]),
+            yearlyVisitCharges: toNum(cols[iYear]),
+            finalAmount: toNum(cols[iFinal]),
+          };
+          arr.push(item);
+        }
+
+        arr.sort((a,b) => a.panels - b.panels);
+        PRICING = arr;
+        PRICING_READY = PRICING.length > 0;
+        return PRICING_READY;
+      }catch(e){
+        return false;
+      }
+    }
+
+    function findSlabByPanels(panels){
+      const exact = PRICING.find(x => x.panels === panels);
+      if (exact) return { slab: exact, exact: true };
+
+      let best = PRICING[0];
+      let bestDiff = Math.abs(PRICING[0].panels - panels);
+      for (const s of PRICING){
+        const d = Math.abs(s.panels - panels);
+        if (d < bestDiff){
+          best = s; bestDiff = d;
+        }
+      }
+      return { slab: best, exact: false };
+    }
+
+    function money(n){
+      const hasDecimal = Math.round(n * 100) % 100 !== 0;
+      return "₹" + (hasDecimal ? n.toFixed(2) : Math.round(n).toString());
+    }
+
+    function percent(a, b){
+      if (!a || a <= 0) return 0;
+      return ((a - b) / a) * 100;
+    }
+
+    function formatPercent(p){
+      return (Math.round(p * 100) / 100).toFixed(2) + "%";
+    }
+
+    const screenLogin  = document.getElementById("screenLogin");
+    const screenForm   = document.getElementById("screenForm");
+    const screenResult = document.getElementById("screenResult");
+
+    const backBtn = document.getElementById("backBtn");
+
+    const custNameEl   = document.getElementById("custName");
+    const custMobileEl = document.getElementById("custMobile");
+    const loginBtn     = document.getElementById("loginBtn");
+    const loginError   = document.getElementById("loginError");
+
+    const panelsEl   = document.getElementById("panels");
+    const capEl      = document.getElementById("capacity");
+    const planEl     = document.getElementById("planType");
+    const getBtn     = document.getElementById("getEstimateBtn");
+    const formError  = document.getElementById("formError");
+
+    const processImg = document.getElementById("processImg");
+    const chipsWrap  = document.getElementById("chips");
+
+    const saveBadge  = document.getElementById("saveBadge");
+    const amcPerNew  = document.getElementById("amcPerNew");
+    const amcPerOld  = document.getElementById("amcPerOld");
+    const amcYearNew = document.getElementById("amcYearNew");
+    const amcYearOld = document.getElementById("amcYearOld");
+
+    const oneExpensiveLine = document.getElementById("oneExpensiveLine");
+    const oneServiceCharge = document.getElementById("oneServiceCharge");
+
+    const slabNote   = document.getElementById("slabNote");
+    const linkHint   = document.getElementById("linkHint");
+
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+
+    processImg.src = PROCESS_IMAGE_URL;
+
+processImg.muted = true;
+processImg.autoplay = true;
+processImg.loop = true;
+processImg.playsInline = true;
+processImg.preload = "auto";
+processImg.controls = false;
+
+processImg.addEventListener("loadedmetadata", () => {
+  processImg.play().catch(()=>{});
+});
+
+processImg.addEventListener("canplay", () => {
+  processImg.play().catch(()=>{});
+});
+
+document.addEventListener("click", () => {
+  if (processImg.paused) processImg.play().catch(()=>{});
+}, { once:true });
+
+
+    let lastData = null;
+
+    function showScreen(which){
+      screenLogin.classList.remove("active");
+      screenForm.classList.remove("active");
+      screenResult.classList.remove("active");
+      which.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    custMobileEl.addEventListener("input", () => {
+      custMobileEl.value = custMobileEl.value.replace(/\D/g,'').slice(0,10);
+    });
+
+    function setPricingUIState(){
+      if (PRICING_READY){
+        formError.style.display = "none";
+        getBtn.disabled = false;
+      } else {
+        formError.textContent = "Pricing load ho rahi hai... (2-3 sec) Please wait.";
+        formError.style.display = "block";
+        getBtn.disabled = true;
+      }
+    }
+
+    // ✅ load pricing at start
+    (async () => {
+      setPricingUIState();
+      const ok = await loadPricingFromSheet();
+      PRICING_READY = !!ok;
+      if (PRICING_READY){
+        formError.style.display = "none";
+        getBtn.disabled = false;
+      } else {
+        formError.textContent = "Pricing load nahi hui. Please page reload karo.";
+        formError.style.display = "block";
+        getBtn.disabled = true;
+      }
+    })();
+
+    loginBtn.addEventListener("click", () => {
+      loginError.style.display = "none";
+      const name = (custNameEl.value || "").trim();
+      const mobile = (custMobileEl.value || "").trim();
+
+      if (name.length < 2){
+        loginError.textContent = "Please enter valid name.";
+        loginError.style.display = "block";
+        return;
+      }
+      if (!/^\d{10}$/.test(mobile)){
+        loginError.textContent = "Please enter valid 10 digit mobile number.";
+        loginError.style.display = "block";
+        return;
+      }
+      showScreen(screenForm);
+      setPricingUIState();
+    });
+
+    getBtn.addEventListener("click", () => {
+      formError.style.display = "none";
+
+      const panels = Math.max(1, parseInt(panelsEl.value || "0", 10));
+      const capacity = parseFloat(capEl.value || "0");
+      const plan = planEl.value || "Residential";
+
+      if (!panels || panels < 1){
+        formError.textContent = "Please enter valid number of panels.";
+        formError.style.display = "block";
+        return;
+      }
+      if (!capacity || capacity <= 0){
+        formError.textContent = "Please enter valid system capacity (KW).";
+        formError.style.display = "block";
+        return;
+      }
+
+      if (!PRICING_READY || !PRICING || PRICING.length === 0){
+        formError.textContent = "Pricing load nahi hui. Please page reload karo.";
+        formError.style.display = "block";
+        return;
+      }
+
+      const res = findSlabByPanels(panels);
+      const slab = res.slab;
+
+      chipsWrap.innerHTML = "";
+      const chip = (text, active=false) => {
+        const d = document.createElement("div");
+        d.className = "chip" + (active ? " active" : "");
+        d.textContent = text;
+        return d;
+      };
+      chipsWrap.appendChild(chip(plan.toUpperCase(), false));
+      chipsWrap.appendChild(chip("MONO", true));
+      chipsWrap.appendChild(chip(capacity.toFixed(2) + " KW", false));
+      chipsWrap.appendChild(chip(panels + " Panels", false));
+
+      amcPerNew.textContent  = money(slab.perVisitAfterDiscount);
+      amcPerOld.textContent  = money(slab.perVisitCharges);
+      amcYearNew.textContent = money(slab.finalAmount);
+      amcYearOld.textContent = money(slab.yearlyVisitCharges);
+
+      const savedPct = percent(slab.yearlyVisitCharges, slab.finalAmount);
+      saveBadge.textContent = "SAVES " + formatPercent(savedPct);
+
+      oneServiceCharge.textContent = money(slab.perVisitCharges);
+      oneExpensiveLine.textContent = formatPercent(savedPct) + " Expensive than AMC package";
+
+      slabNote.textContent = (!res.exact)
+        ? `Note: ${panels} panels ka exact slab nahi mila, nearest slab ${slab.panels} panels apply hua (Capacity ${slab.capacityKW} kW).`
+        : "";
+
+      lastData = {
+        customerName: (custNameEl.value || "").trim(),
+        customerMobile: (custMobileEl.value || "").trim(),
+        plan,
+        panels,
+        capacityShown: capacity.toFixed(2),
+
+        oneTimeServiceCharge: slab.perVisitCharges,
+        oneTime12Charge: slab.yearlyVisitCharges,
+
+        amcPerCharge: slab.perVisitAfterDiscount,
+        amc12Charge: slab.finalAmount,
+
+        savingsAmount: slab.yearlyVisitCharges - slab.finalAmount,
+        savingsPercent: savedPct,
+
+        processImageUrl: PROCESS_IMAGE_URL
+      };
+
+      fetch(LEADS_WEBAPP_URL, {
+        method: "POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({
+          action:"saveLead",
+          name:lastData.customerName,
+          mobile:lastData.customerMobile,
+          panels:lastData.panels,
+          capacity:lastData.capacityShown,
+          plan:lastData.plan
+        })
+      }).catch(()=>{});
+
+      showScreen(screenResult);
+    });
+
+    backBtn.addEventListener("click", () => {
+      if (screenResult.classList.contains("active")) return showScreen(screenForm);
+      if (screenForm.classList.contains("active")) return showScreen(screenLogin);
+    });
+
+    async function urlToDataURL(url){
+      if (!url) return null;
+      try{
+        const res = await fetch(url, { mode: "cors", cache:"no-store" });
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = () => resolve(null);
+          r.readAsDataURL(blob);
+        });
+      }catch(e){
+        return null;
+      }
+    }
+
+    function drawTable(doc, x, y, w, rows, headerText){
+      const rowH = 28;
+      const col1 = Math.round(w * 0.68);
+      const col2 = w - col1;
+
+      doc.setFillColor(10, 95, 142);
+      doc.setDrawColor(10, 95, 142);
+      doc.rect(x, y, w, rowH, "F");
+      doc.setTextColor(255);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(12);
+      doc.text(headerText, x + w/2, y + 18, { align:"center" });
+
+      doc.setDrawColor(20);
+      doc.setLineWidth(0.8);
+
+      let cy = y + rowH;
+
+      for (const r of rows){
+        doc.setFillColor(255,255,255);
+        doc.rect(x, cy, col1, rowH, "S");
+        doc.rect(x + col1, cy, col2, rowH, "S");
+
+        doc.setTextColor(0);
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(11);
+
+        doc.text(r.left, x + col1/2, cy + 18, { align:"center" });
+        doc.text(r.right, x + col1 + col2/2, cy + 18, { align:"center" });
+
+        cy += rowH;
+      }
+
+      return cy;
+    }
+
+    downloadBtn.addEventListener("click", async () => {
+      if (!lastData){
+        alert("Pehle estimate generate karo.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const margin = 50;
+      let y = 60;
+
+      const logoData = PDF_LOGO_URL ? await urlToDataURL(PDF_LOGO_URL) : null;
+      if (logoData){
+         doc.addImage(logoData, "PNG", margin, y - 65, 120, 100);
+      }
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(28);
+      doc.setTextColor(10, 95, 142);
+      doc.text("Estimate", pageW - margin, y + 10, { align:"right" });
+
+      y += 46;
+
+      doc.setTextColor(0);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text("From", margin, y);
+      doc.text("To", pageW - margin - 120, y);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(10);
+      const fromLines = [
+        FROM_COMPANY.name,
+        FROM_COMPANY.address1,
+        FROM_COMPANY.address2,
+        FROM_COMPANY.phone
+      ];
+      let fy = y + 16;
+      for (const line of fromLines){
+        doc.text(line, margin, fy);
+        fy += 14;
+      }
+
+      const toLines = [
+        lastData.customerName,
+        "+91 " + lastData.customerMobile
+      ];
+      let ty = y + 16;
+      for (const line of toLines){
+        doc.text(line, pageW - margin - 120, ty);
+        ty += 14;
+      }
+
+      y = Math.max(fy, ty) + 22;
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text("Estimate Details", margin, y);
+      y += 14;
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(10);
+      const dt = new Date();
+      const dateStr = dt.toLocaleString();
+      doc.text(dateStr, margin, y); y += 14;
+
+      doc.text(`Type  : ${lastData.plan}`, margin, y); y += 14;
+      doc.text(`Solar Capacity : ${lastData.capacityShown} KW`, margin, y); y += 14;
+      doc.text(`Number of Solar Panels : ${lastData.panels}`, margin, y); y += 24;
+
+      const tableX = margin;
+      const tableW = pageW - margin*2;
+
+      y = drawTable(doc, tableX, y, tableW, [
+        { left: "One Time Cleaning Service Charge", right: `${(lastData.oneTimeServiceCharge).toFixed(2)} Rupees` },
+        { left: "12 One Time Services Charge", right: `${(lastData.oneTime12Charge).toFixed(2)} Rupees` }
+      ], "One Time Service Details") + 30;
+
+      y = drawTable(doc, tableX, y, tableW, [
+        { left: "per Cleaning Service Charge", right: `${(lastData.amcPerCharge).toFixed(2)} Rupees` },
+        { left: "AMC Cleaning 12-Service Charge", right: `${(lastData.amc12Charge).toFixed(2)} Rupees` },
+        { left: "Savings", right: `${(lastData.savingsAmount).toFixed(2)} Rupees` }
+      ], "AMC Service Plan Details") + 38;
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(26);
+      doc.setTextColor(39, 160, 75);
+      doc.text("You Pay From What You Save", pageW/2, y, { align:"center" });
+      y += 40;
+
+      const footerLogoData = PDF_FOOTER_LOGO_URL ? await urlToDataURL(PDF_FOOTER_LOGO_URL) : null;
+      if (footerLogoData){
+        doc.addImage(footerLogoData, "PNG", (pageW/2)-45, y, 90, 50);
+      }
+
+      const fileName = `Estimate-${lastData.customerName.replace(/\s+/g,'_')}-${lastData.panels}panels.pdf`;
+      doc.save(fileName);
+    });
+  </script>
+</body>
+</html>
