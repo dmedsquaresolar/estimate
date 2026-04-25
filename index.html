@@ -599,7 +599,7 @@
             </ul>
 
             <div class="amc-bottom">
-              <a id="amcBookLink" class="book-link" href="#" onclick="openBookingFromEstimate('Yearly'); return false;">BOOK NOW</a>
+              <a id="amcBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer">BOOK NOW</a>
 
               <div class="price-block">
                 <div class="price-line">
@@ -627,7 +627,9 @@
             </ul>
 
             <div class="one-bottom">
-              <a id="oneBookLink" class="book-link" href="#" onclick="openBookingFromEstimate('One Time'); return false;" style="color:#1d2630;">BOOK NOW</a>
+              <a id="oneBookLink" class="book-link" href="https://dmedsquaresolar.github.io/CustomersQuerys/" target="_blank" rel="noopener noreferrer" style="color:#1d2630;">
+                BOOK NOW
+              </a>
 
               <div class="one-price">
                 <div>service charge : <span id="oneServiceCharge">₹0</span></div>
@@ -961,42 +963,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
     }, { once:true });
 
     let lastData = null;
-
-    function buildCustomerBookingUrl(data, bookingType){
-      const isOneTime = bookingType === "One Time";
-      const q = new URLSearchParams({
-        fromEstimate: "1",
-        plan: isOneTime ? "One Time" : "Yearly",
-        allowOneTime: isOneTime ? "1" : "0",
-        amount: String(isOneTime ? data.oneTimeServiceCharge : data.amc12Charge),
-        name: data.customerName || "",
-        mobile: data.customerMobile || "",
-        panels: String(data.panels || ""),
-        capacity: String(data.capacityShown || "")
-      });
-      return CUSTOMER_PAGE_URL + "?" + q.toString();
-    }
-
-    function openBookingFromEstimate(type){
-      if(!lastData){
-        alert("Pehle estimate generate karo.");
-        return;
-      }
-      window.location.href = buildCustomerBookingUrl(lastData, type);
-    }
-
-    function prefillFromCustomerIfAny(){
-      const name = getQueryParam("name");
-      const mobile = getQueryParam("mobile");
-
-      if(name) custNameEl.value = name;
-      if(mobile) custMobileEl.value = mobile.replace(/\D/g,"").slice(0,10);
-
-      if(getQueryParam("fromCustomer") === "1" && name && mobile){
-        showScreen(screenForm);
-      }
-    }
-
 
     function showScreen(which){
       screenLogin.classList.remove("active");
@@ -1442,7 +1408,6 @@ if (plan === "Commercial"){
 
     (async function init(){
       await checkVersionBeforeOpen();
-      prefillFromCustomerIfAny();
     })();
   </script>
 </body>
