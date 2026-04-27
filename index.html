@@ -344,6 +344,11 @@
       font-size: 18px;
     }
 
+    .booking-flow-only-one-time .amc-estimate-card,
+    .booking-flow-only-one-time #downloadPdfBtn{
+      display:none !important;
+    }
+
     .note{
       margin: 10px 2px 0;
       font-size: 12px;
@@ -506,10 +511,6 @@
           <input id="reqMobile" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit mobile">
         </div>
 
-        <div class="field">
-          <div class="label">Number of Panels</div>
-          <input id="reqPanels" class="input" type="number" min="1" step="1" placeholder="12">
-        </div>
 
         <div class="field">
           <div class="label">System Capacity in KW</div>
@@ -552,10 +553,6 @@
       </div>
 
       <div id="screenForm" class="screen">
-        <div class="field">
-          <div class="label">Number of Panels</div>
-          <input id="panels" class="input" type="number" min="1" step="1" placeholder="12">
-        </div>
 
         <div class="field">
           <div class="label">System Capacity in KW</div>
@@ -585,7 +582,7 @@
 
         <h3>Estimates</h3>
 
-        <div class="estimate-card">
+        <div class="estimate-card amc-estimate-card">
           <div class="amc-wrap">
             <div class="amc-top">
               <div class="amc-title">AMC - 12 Services Annually</div>
@@ -714,6 +711,13 @@
     const PDF_FOOTER_LOGO_URL = "";
 
     const LEADS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby6J1PUZdgXAh-T7GVN5SJtw3lM_JeFUyDtj6Zk71ppOik-4wTkqW6zFyswwagNRs76UQ/exec";
+
+    function getQueryParam(name){
+      return new URLSearchParams(window.location.search).get(name) || "";
+    }
+
+    const IS_BOOKING_FLOW = getQueryParam("source") === "booking" || getQueryParam("bookingFlow") === "1";
+    const URL_PLAN = getQueryParam("plan");
 
     let PRICING = [];
     let PRICING_READY = false;
@@ -845,14 +849,15 @@
       }
     }
 
-    function findSlabByPanels(panels){
-      const exact = PRICING.find(x => x.panels === panels);
+    function findSlabByCapacity(capacity){
+      const cap = Number(capacity || 0);
+      const exact = PRICING.find(x => Math.abs(Number(x.capacityKW || 0) - cap) < 0.001);
       if (exact) return { slab: exact, exact: true };
 
       let best = PRICING[0];
-      let bestDiff = Math.abs(PRICING[0].panels - panels);
+      let bestDiff = Math.abs(Number(PRICING[0].capacityKW || 0) - cap);
       for (const s of PRICING){
-        const d = Math.abs(s.panels - panels);
+        const d = Math.abs(Number(s.capacityKW || 0) - cap);
         if (d < bestDiff){
           best = s; bestDiff = d;
         }
@@ -876,7 +881,6 @@
         amount: String(isOneTime ? data.oneTimeServiceCharge : data.amc12Charge),
         name: data.customerName || "",
         mobile: data.customerMobile || "",
-        panels: String(data.panels || ""),
         capacity: String(data.capacityShown || "")
       });
       return CUSTOMER_PAGE_URL + "?" + q.toString();
@@ -902,7 +906,6 @@
     const loginBtn     = document.getElementById("loginBtn");
     const loginError   = document.getElementById("loginError");
 
-    const panelsEl   = document.getElementById("panels");
     const capEl      = document.getElementById("capacity");
     const planEl     = document.getElementById("planType");
     const getBtn     = document.getElementById("getEstimateBtn");
@@ -935,7 +938,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
     const requirementFormWrap = document.getElementById("requirementFormWrap");
     const reqNameEl = document.getElementById("reqName");
     const reqMobileEl = document.getElementById("reqMobile");
-    const reqPanelsEl = document.getElementById("reqPanels");
     const reqCapacityEl = document.getElementById("reqCapacity");
     const submitRequirementBtn = document.getElementById("submitRequirementBtn");
     const requirementError = document.getElementById("requirementError");
@@ -964,6 +966,20 @@ const customerCareMessage = document.getElementById("customerCareMessage");
 
     let lastData = null;
 
+    function setupUrlPrefill(){
+      const name = getQueryParam("name");
+      const mobile = getQueryParam("mobile");
+      const capacity = getQueryParam("capacity");
+
+      if(name) custNameEl.value = decodeURIComponent(name);
+      if(mobile) custMobileEl.value = String(mobile).replace(/\D/g, "").slice(0,10);
+      if(capacity) capEl.value = capacity;
+
+      if(IS_BOOKING_FLOW || URL_PLAN === "One Time"){
+        document.body.classList.add("booking-flow-only-one-time");
+      }
+    }
+
     function showScreen(which){
       screenLogin.classList.remove("active");
       screenForm.classList.remove("active");
@@ -973,9 +989,7 @@ const customerCareMessage = document.getElementById("customerCareMessage");
     }
 
     function showCustomerCarePopup(reason){
-  if(reason === "panels"){
-    customerCareMessage.textContent = "It looks like an automatic estimate cannot be generated for this panel no. Our customer care team will be happy to assist you personally.";
-  }else if(reason === "capacity"){
+  if(reason === "capacity"){
     customerCareMessage.textContent = "It looks like an automatic estimate cannot be generated for this capacity. Our customer care team will be happy to assist you personally.";
   }else if(reason === "commercial"){
     customerCareMessage.textContent = "Please contact our customer care team for this requirement.";
@@ -989,7 +1003,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
   requirementSuccess.style.display = "none";
   reqNameEl.value = (custNameEl.value || "").trim();
   reqMobileEl.value = (custMobileEl.value || "").trim();
-  reqPanelsEl.value = (panelsEl.value || "").trim();
   reqCapacityEl.value = (capEl.value || "").trim();
   customerCareModal.style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -1068,7 +1081,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
 
       const name = (reqNameEl.value || "").trim();
       const mobile = (reqMobileEl.value || "").trim();
-      const panels = Math.max(1, parseInt(reqPanelsEl.value || "0", 10));
       const capacity = parseFloat(reqCapacityEl.value || "0");
 
       if (name.length < 2){
@@ -1078,11 +1090,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
       }
       if (!/^\d{10}$/.test(mobile)){
         requirementError.textContent = "Please enter valid 10 digit mobile number.";
-        requirementError.style.display = "block";
-        return;
-      }
-      if (!panels || panels < 1){
-        requirementError.textContent = "Please enter valid number of panels.";
         requirementError.style.display = "block";
         return;
       }
@@ -1104,7 +1111,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
             sheetName:"Requirement Query",
             name:name,
             mobile:mobile,
-            panels:panels,
             capacity:capacity.toFixed(2)
           })
         });
@@ -1113,7 +1119,6 @@ const customerCareMessage = document.getElementById("customerCareMessage");
         requirementSuccess.style.display = "block";
         reqNameEl.value = "";
         reqMobileEl.value = "";
-        reqPanelsEl.value = "";
         reqCapacityEl.value = "";
       }catch(e){
         requirementError.textContent = "Unable to submit requirement right now. Please try again.";
@@ -1127,27 +1132,16 @@ const customerCareMessage = document.getElementById("customerCareMessage");
     getBtn.addEventListener("click", () => {
       formError.style.display = "none";
 
-      const panels = Math.max(1, parseInt(panelsEl.value || "0", 10));
       const capacity = parseFloat(capEl.value || "0");
       const plan = planEl.value || "Residential";
 
-      if (!panels || panels < 1){
-        formError.textContent = "Please enter valid number of panels.";
-        formError.style.display = "block";
-        return;
-      }
       if (!capacity || capacity <= 0){
         formError.textContent = "Please enter valid system capacity (KW).";
         formError.style.display = "block";
         return;
       }
 
-      if (panels > 26){
-  showCustomerCarePopup("panels");
-  return;
-}
-
-if (capacity > 15){
+      if (capacity > 15){
   showCustomerCarePopup("capacity");
   return;
 }
@@ -1163,7 +1157,7 @@ if (plan === "Commercial"){
         return;
       }
 
-      const res = findSlabByPanels(panels);
+      const res = findSlabByCapacity(capacity);
       const slab = res.slab;
 
       chipsWrap.innerHTML = "";
@@ -1176,7 +1170,6 @@ if (plan === "Commercial"){
       chipsWrap.appendChild(chip(plan.toUpperCase(), false));
       chipsWrap.appendChild(chip("MONO", true));
       chipsWrap.appendChild(chip(capacity.toFixed(2) + " KW", false));
-      chipsWrap.appendChild(chip(panels + " Panels", false));
 
       amcPerNew.textContent  = money(slab.perVisitAfterDiscount);
       amcPerOld.textContent  = money(slab.perVisitCharges);
@@ -1190,14 +1183,13 @@ if (plan === "Commercial"){
       oneExpensiveLine.textContent = formatPercent(savedPct) + " Expensive than AMC package";
 
       slabNote.textContent = (!res.exact)
-        ? `Note: ${panels} panels ka exact slab nahi mila, nearest slab ${slab.panels} panels apply hua (Capacity ${slab.capacityKW} kW).`
+        ? `Note: ${capacity.toFixed(2)} KW ka exact slab nahi mila, nearest slab ${slab.capacityKW} KW apply hua.`
         : "";
 
       lastData = {
         customerName: (custNameEl.value || "").trim(),
         customerMobile: (custMobileEl.value || "").trim(),
         plan,
-        panels,
         capacityShown: capacity.toFixed(2),
 
         oneTimeServiceCharge: slab.perVisitCharges,
@@ -1229,7 +1221,6 @@ if (plan === "Commercial"){
           action:"saveLead",
           name:lastData.customerName,
           mobile:lastData.customerMobile,
-          panels:lastData.panels,
           capacity:lastData.capacityShown,
           plan:lastData.plan
         })
@@ -1375,7 +1366,7 @@ if (plan === "Commercial"){
 
       doc.text(`Type  : ${lastData.plan}`, margin, y); y += 14;
       doc.text(`Solar Capacity : ${lastData.capacityShown} KW`, margin, y); y += 14;
-      doc.text(`Number of Solar Panels : ${lastData.panels}`, margin, y); y += 24;
+      y += 10;
 
       const tableX = margin;
       const tableW = pageW - margin*2;
@@ -1402,11 +1393,12 @@ if (plan === "Commercial"){
         doc.addImage(footerLogoData, "PNG", (pageW/2)-45, y, 90, 50);
       }
 
-      const fileName = `Estimate-${lastData.customerName.replace(/\s+/g,'_')}-${lastData.panels}panels.pdf`;
+      const fileName = `Estimate-${lastData.customerName.replace(/\s+/g,'_')}-${lastData.capacityShown}KW.pdf`;
       doc.save(fileName);
     });
 
     (async function init(){
+      setupUrlPrefill();
       await checkVersionBeforeOpen();
     })();
   </script>
