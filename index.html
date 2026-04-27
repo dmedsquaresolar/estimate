@@ -1111,7 +1111,8 @@ const customerCareMessage = document.getElementById("customerCareMessage");
             sheetName:"Requirement Query",
             name:name,
             mobile:mobile,
-            capacity:capacity.toFixed(2)
+            capacity:capacity.toFixed(2),
+            plan:(planEl && planEl.value) ? planEl.value : "Residential"
           })
         });
 
